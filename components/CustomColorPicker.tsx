@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Modal, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import Slider from '@react-native-community/slider';
-import ColorWheel from './ColorWheel';
+import React, { useState, useEffect } from "react";
+import { View, Modal, StyleSheet, TouchableOpacity, Text } from "react-native";
+import Slider from "@react-native-community/slider";
+import ColorWheel from "./ColorWheel";
+import { Color } from "@/app/(tabs)/main";
 
-export class Color {
-  c: string;
-  b: number;
-  constructor(c: string, b: number) {
-    this.c = c;
-    this.b = b;
-  }
-}
+
 
 interface ColorPickerModalProps {
   visible: boolean;
@@ -25,13 +19,16 @@ const CustomColorPickerModal: React.FC<ColorPickerModalProps> = ({
   onClose,
   onSelectColor,
 }) => {
-  const [selectedColor, setSelectedColor] = useState<Color>(new Color('#FFFFFF', 1));
+  const [selectedColor, setSelectedColor] = useState<Color>(
+    new Color("#FFFFFF", "1")
+  );
   const [brightness, setBrightness] = useState(1);
 
   useEffect(() => {
     if (initialColor) {
       setSelectedColor(initialColor);
-      setBrightness(initialColor.b);
+      // Convert from 0-255 scale to 0-1 scale for the slider
+      setBrightness(parseInt(initialColor.b) / 255);
     }
   }, [initialColor, visible]);
 
@@ -45,9 +42,11 @@ const CustomColorPickerModal: React.FC<ColorPickerModalProps> = ({
 
   const handleBrightnessChange = (value: number) => {
     setBrightness(value);
+    // Convert from 0-1 scale to 0-255 scale
+    const brightnessValue = Math.round(value * 255).toString();
     setSelectedColor({
       ...selectedColor,
-      b: value,
+      b: brightnessValue,
     });
   };
 
@@ -58,30 +57,43 @@ const CustomColorPickerModal: React.FC<ColorPickerModalProps> = ({
 
   function hsvToHex(h: number, s: number, v: number): string {
     let r: number, g: number, b: number;
-  
+
     const i = Math.floor(h * 6); // Sector index (0 to 5)
     const f = h * 6 - i; // Fractional part of h
     const p = v * (1 - s); // Primary value
     const q = v * (1 - f * s); // Secondary value
     const t = v * (1 - (1 - f) * s); // Tertiary value
-  
+
     // Calculate RGB based on the sector
     switch (i % 6) {
-      case 0: r = v, g = t, b = p; break; // Red to Yellow
-      case 1: r = q, g = v, b = p; break; // Yellow to Green
-      case 2: r = p, g = v, b = t; break; // Green to Cyan
-      case 3: r = p, g = q, b = v; break; // Cyan to Blue
-      case 4: r = t, g = p, b = v; break; // Blue to Magenta
-      case 5: r = v, g = p, b = q; break; // Magenta to Red
-      default: r = 0, g = 0, b = 0; // Fallback (should never happen)
+      case 0:
+        (r = v), (g = t), (b = p);
+        break; // Red to Yellow
+      case 1:
+        (r = q), (g = v), (b = p);
+        break; // Yellow to Green
+      case 2:
+        (r = p), (g = v), (b = t);
+        break; // Green to Cyan
+      case 3:
+        (r = p), (g = q), (b = v);
+        break; // Cyan to Blue
+      case 4:
+        (r = t), (g = p), (b = v);
+        break; // Blue to Magenta
+      case 5:
+        (r = v), (g = p), (b = q);
+        break; // Magenta to Red
+      default:
+        (r = 0), (g = 0), (b = 0); // Fallback (should never happen)
     }
-  
+
     // Convert RGB values (0-1) to hex (00-FF)
     const toHex = (x: number) => {
       const hex = Math.round(x * 255).toString(16);
-      return hex.length === 1 ? '0' + hex : hex; // Ensure two digits
+      return hex.length === 1 ? "0" + hex : hex; // Ensure two digits
     };
-  
+
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }
 
@@ -117,7 +129,7 @@ const CustomColorPickerModal: React.FC<ColorPickerModalProps> = ({
             <View
               style={[
                 styles.colorPreview,
-                { backgroundColor: selectedColor.c, opacity: selectedColor.b },
+                { backgroundColor: selectedColor.c, opacity: parseInt(selectedColor.b)/255 },
               ]}
             />
           </View>
@@ -130,7 +142,9 @@ const CustomColorPickerModal: React.FC<ColorPickerModalProps> = ({
               style={[styles.button, styles.confirmButton]}
               onPress={handleConfirm}
             >
-              <Text style={[styles.buttonText, { color: '#fff' }]}>Confirm</Text>
+              <Text style={[styles.buttonText, { color: "#fff" }]}>
+                Confirm
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -142,24 +156,24 @@ const CustomColorPickerModal: React.FC<ColorPickerModalProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: '#fff',
+    width: "80%",
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   brightnessContainer: {
-    width: '100%',
+    width: "100%",
     marginTop: 20,
   },
   brightnessLabel: {
@@ -167,13 +181,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   brightnessSlider: {
-    width: '100%',
+    width: "100%",
     height: 40,
   },
   previewContainer: {
-    width: '100%',
+    width: "100%",
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   previewLabel: {
     fontSize: 16,
@@ -184,28 +198,28 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     marginTop: 20,
   },
   button: {
     padding: 10,
     borderRadius: 5,
-    width: '45%',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    width: "45%",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
   },
   confirmButton: {
-    backgroundColor: '#0066cc',
+    backgroundColor: "#0066cc",
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
   },
 });
 
